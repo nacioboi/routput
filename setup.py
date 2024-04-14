@@ -55,14 +55,19 @@ else:
 		msg += "This script will remove he `dist` directory.\n"
 		msg += "Please touch a file named `.DO_CONTINUE` in the root of the project directory to continue.\n"
 		raise Exception(msg)
-	else:
-		os.remove(".DO_CONTINUE")
 shutil.rmtree("dist", ignore_errors=True)
+
 
 
 
 if len(sys.argv) == 1:
 	sys.argv.append("sdist")
+elif len(sys.argv) > 1 and sys.argv[1] in ["egg_info", "dist_info", "bdist_wheel"]:
+	# We must've called `pip install .`.
+	pass
+else:
+	raise Exception("Invalid arguments.", ", ".join(sys.argv))
+
 
 
 

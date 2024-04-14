@@ -29,7 +29,7 @@ else:
 
 
 
-def display_error(err_msg):
+def display_error(err_msg:"str"):
 
 	if os.name != "nt":
 		err_msg = f"\033[31m{err_msg}\033[0m"
@@ -43,7 +43,7 @@ def display_error(err_msg):
 
 
 
-def parse_bracket_list(s):
+def parse_bracket_list(s:"str"):
 
 	return s[1:-1].replace(" ", "").split(",") if s.startswith("[") and s.endswith("]") else []
 
@@ -51,7 +51,7 @@ def parse_bracket_list(s):
 
 
 
-def print_structure(directory):
+def print_structure(directory:"str"):
 	indent_level = 0
 	for root, _, _ in os.walk(directory):
 
@@ -66,54 +66,29 @@ def print_structure(directory):
 
 
 
-def __x__is_in_ignore_list(full_path:"str", ignore_list:"list[str]") -> "bool":
+def find_children_of_dir(s_dir:"str", extensions:"list[str]", includes:"list[str]", ignores:"list[str]") -> "list[str]":
 	"""
-	Will check if the full_path is in the ignore_list.
-	This works if x item in ignore_list is only the name AND if it is the full path.
+	Find all the files in the starting_directory that have the extensions in the extensions_list or are in the
+	include_list, while excluding those in the ignore_list.
 	"""
-	assert os.path.isabs(full_path)
-	for item in ignore_list:
-
-		num_item_sections = len(item.split(SPLITTER))
-
-		if item == full_path:
-			return True
-
-		elif item == full_path.split(SPLITTER)[-num_item_sections:]:
-			return True
-
-	return False
-	f"END {__x__is_in_ignore_list}"
-
-def find_children_of_starting_dir(starting_directory, extensions_list, include_list, ignore_list) -> "list[str]":
-	"""
-	Will find all the files in the starting_directory that have the extensions in the extensions_list.
-	"""
+	# Convert lists to sets for faster checks
+	ignore_set = set(ignores)
+	include_set = set(includes)
+	extensions_tuple = tuple(extensions)  # Prepare a tuple of extensions
 	found_items = []
-	for root, dirs, files in os.walk(starting_directory):
-
-		for dir in dirs:
-			full_path = os.path.join(root, dir)
-			if __x__is_in_ignore_list(full_path, ignore_list):
-				for s, _, f in os.walk(full_path):
-					for file in f:
-						full_path = os.path.join(s, file)
-						if __x__is_in_ignore_list(full_path, ignore_list):
-							continue
-						ignore_list.append(full_path)
+	for root, dirs, files in os.walk(s_dir, topdown=True):
+		# Modify dirs in-place to prevent os.walk from walking ignored directories
+		dirs[:] = [d for d in dirs if os.path.join(root, d) not in ignore_set]
 
 		for file in files:
 			full_path = os.path.join(root, file)
-			if __x__is_in_ignore_list(full_path, ignore_list):
+			if full_path in ignore_set:
 				continue
-			if file.endswith(tuple(extensions_list)) or file in include_list:
+			if file.endswith(extensions_tuple) or file in include_set:
 				found_items.append(full_path)
 
-	for item in found_items:
-		assert os.path.exists(item)
-		assert os.path.isabs(item)
 	return found_items
-	f"END {find_children_of_starting_dir}"
+	f"END {find_children_of_dir}"
 
 
 
@@ -150,7 +125,10 @@ def normal_print(starting_directory, item_path, i, do_protect_privacy):
 def validate_args(args):
 
 	if not os.path.exists(args.starting_directory):
-		display_error(f"[[routput.py]]: Invalid `starting_directory`: [{args.starting_directory}]\nDirectory does not exist.")
+		err_msg = ""
+		err_msg += f"[[routput.py]]: Invalid `starting_directory`: [{args.starting_directory}]\n"
+		err_msg += "Directory does not exist."
+		display_error(err_msg)
 
 	starting_dir = os.path.abspath(args.starting_directory)
 	extensions_list = [ext if ext.startswith('.') else f".{ext}" for ext in parse_bracket_list(args.extensions)]
@@ -191,17 +169,73 @@ def validate_args(args):
 
 def main():
 
-	parser = argparse.ArgumentParser(description="Find files based on their extensions, recursively from a starting directory.")
+	desc = ""
+	desc += "Find files based on their extensions, recursively from a starting directory.\n"
+	parser = argparse.ArgumentParser(description=desc)
 	
-	parser.add_argument("-d", "--starting-directory", type=str, default=".", help="Directory to start the search from.")
-	parser.add_argument("-s", "--do-print-structure", action="store_true", default=False, help="Print the directory structure.")
-	parser.add_argument("-e", "--extensions", type=str, default="[c,h]", help="List of file extensions to search for, in the format [ext1,ext2,...].")
-	parser.add_argument("-p", "--do-protect-privacy",  action="store_true", default=False, help="Anonymize the file paths to be relative to the starting directory.")
-	parser.add_argument("-a", "--also-include", type=str, default="[]", help="List of additional filenames to include, in the format [file1,file2,...].")
-	parser.add_argument("-i", "--ignore", type=str, default="[]", help="List of filenames to ignore, in the format [file1,file2,dir1,dir2...].")
-	parser.add_argument("-n", "--no-print", action="store_true", default=False, help="Don't print the files, just return them.")
-	parser.add_argument("-b", "--do-use-bat", action="store_true", default=False, help="Use `bat` utility for syntax highlighting.")
-	parser.add_argument("-c", "--do-colors", action="store_true", default=False, help="Use a different color for each file.")
+	parser.add_argument(
+		"-d",
+		"--starting-directory", 
+		type=str, 
+		default=".",
+		help="Directory to start the search from."
+	)
+	parser.add_argument(
+		"-s",
+		"--do-print-structure", 
+		action="store_true",
+		default=False,
+		help="Print the directory structure."
+	)
+	parser.add_argument(
+		"-e",
+		"--extensions", 
+		type=str,
+		required=True,
+		help="List of file extensions to search for, in the format [ext1,ext2,...]."
+	)
+	parser.add_argument(
+		"-p",
+		"--do-protect-privacy", 
+		action="store_true",
+		default=False,
+		help="Anonymize the file paths to be relative to the starting directory."
+	)
+	parser.add_argument(
+		"-a",
+		"--also-include",
+		type=str,
+		default="[]",
+		help="List of additional filenames to include, in the format [file1,file2,...]."
+	)
+	parser.add_argument(
+		"-i",
+		"--ignore",
+		type=str,
+		default="[]",
+		help="List of filenames to ignore, in the format [file1,file2,dir1,dir2...]."
+	)
+	parser.add_argument(
+		"-n",
+		"--no-print",
+		action="store_true",
+		default=False,
+		help="Don't print the files, just return them."
+	)
+	parser.add_argument(
+		"-b",
+		"--do-use-bat",
+		action="store_true",
+		default=False,
+		help="Use `bat` utility for syntax highlighting."
+	)
+	parser.add_argument(
+		"-c",
+		"--do-colors",
+		action="store_true",
+		default=False,
+		help="Use a different color for each file."
+	)
 	
 	if not len(SYS_ARGV) > 1:
 		parser.print_help()
@@ -217,7 +251,7 @@ def main():
 		print("Directory Structure:")
 		print_structure(args.starting_directory)
 	
-	found_items = find_children_of_starting_dir(
+	found_items = find_children_of_dir(
 		args.starting_directory,
 		args.extensions_list,
 		args.include_list,
@@ -240,7 +274,3 @@ def main():
 	return None
 	f"END {main}"
 
-
-
-if __name__ == "__main__":
-	main()

@@ -4,3 +4,5 @@
 /.token
 /**/*.egg-info
 /dist
+/build
+/.DO_CONTINUE
