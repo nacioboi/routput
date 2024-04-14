@@ -1,0 +1,2 @@
+import routput
+routput.main()
