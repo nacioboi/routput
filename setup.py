@@ -39,7 +39,7 @@ if not os.getcwd().endswith("routput"):
 
 
 
-simple_path_checks = ["/routput/__init__.py"]
+simple_path_checks = ["/routput/__init__.py", "/routput/__main__.py", "/setup.py", "/_setup_deps.py"]
 if not all(os.path.exists(os.path.abspath(os.getcwd()+p)) for p in simple_path_checks):
 	raise Exception("This script must be run from the root of the project directory.")
 
@@ -50,15 +50,19 @@ if not IS_CALLED_BY_PIP:
 	if not has_backed_up:
 		exit(0)
 else:
-	print("\n\n\nWARNING: ABOUT TO DELETE THE `dist` DIRECTORY!!")
-	print("YOU HAVE 5 SECONDS TO CANCEL THIS OPERATION.")
-	time.sleep(5)
+	if not os.path.exists(".DO_CONTINUE"):
+		msg = ""
+		msg += "This script will remove he `dist` directory.\n"
+		msg += "Please touch a file named `.DO_CONTINUE` in the root of the project directory to continue.\n"
+		raise Exception(msg)
+	else:
+		os.remove(".DO_CONTINUE")
 shutil.rmtree("dist", ignore_errors=True)
 
 
 
 if len(sys.argv) == 1:
-	sys.argv.append("bdist_wheel")
+	sys.argv.append("sdist")
 
 
 
