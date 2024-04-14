@@ -19,11 +19,12 @@ if "PIP" in ENV_STR.upper():
 
 
 NOTES = "\n"
-NOTES += "Initial release.\n"
+NOTES += "Fixed an issue where ignoring a dir would halt us.\n"
+NOTES += "Other minor improvements.\n"
 
 CURRENT_VERSION = Version(
 	date=Normal_People_Date(14, 4, 2024),
-	version_number="0.1",
+	version_number="0.2",
 	notes=parse_notes(NOTES)
 )
 CURRENT_VERSION.validate()

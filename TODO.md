@@ -7,3 +7,5 @@ python -m routput -d . -e "py" --format "<file_index> - <file_name>:\n<file_cont
 ```
 
 - [ ] Add `*` expansion to the `--exclude` option
+
+- [ ] Add interactive mode to `routput` to allow user to select files to output and files to ignore/include.
