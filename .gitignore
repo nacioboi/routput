@@ -6,3 +6,4 @@
 /dist
 /build
 /.DO_CONTINUE
+/.OVERRIDE_IS_CALLED_BY_PIP

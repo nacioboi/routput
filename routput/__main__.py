@@ -1,2 +1,1 @@
-import routput
-routput.main()
+import routput ; routput.main()

@@ -14,17 +14,21 @@ ENV_STR = ""
 for item in os.environ:
 	ENV_STR += f"{item}={os.environ[item]}"
 if "PIP" in ENV_STR.upper():
-	IS_CALLED_BY_PIP = True
+	if not os.path.exists(".OVERRIDE_IS_CALLED_BY_PIP"):
+		print("TO OVERRIDE `IS_CALLED_BY_PIP=True` TOUCH A FILE CALLED `.OVERRIDE_IS_CALLED_BY_PIP`.")
+		IS_CALLED_BY_PIP = True
 
 
 
 NOTES = "\n"
-NOTES += "Fixed an issue where ignoring a dir would halt us.\n"
-NOTES += "Other minor improvements.\n"
+NOTES += "among other small changes, a `--script` option has been added.\n"
+NOTES += "- updated `README.md` to show correct usage,\n"
+NOTES += "- made it so the `__name__` of the module is `routput` when the help is displayed.\n"
+NOTES += "- added an example for the `--script` option.\n"
 
 CURRENT_VERSION = Version(
-	date=Normal_People_Date(14, 4, 2024),
-	version_number="0.2",
+	date=Normal_People_Date(18, 4, 2024),
+	version_number="0.3",
 	notes=parse_notes(NOTES)
 )
 CURRENT_VERSION.validate()

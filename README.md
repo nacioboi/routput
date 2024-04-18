@@ -48,7 +48,7 @@ python -m pip install .
 ## Usage
 
 ```bash
-python routput.py [options]
+python -m routput [options]
 ```
 
 Options
