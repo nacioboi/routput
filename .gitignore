@@ -1,9 +1,13 @@
-/.vscode
-/**/*.pyc
+# Hiding secrets...
+/**/.*
+!/.gitignore
+
+# Python Junk...
 /**/__pycache__
-/.token
+/**/*.pyc
 /**/*.egg-info
+
+# Miscellaneous...
+/.vscode
 /dist
 /build
-/.DO_CONTINUE
-/.OVERRIDE_IS_CALLED_BY_PIP
